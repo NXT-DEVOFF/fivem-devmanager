@@ -10,11 +10,13 @@ Documentation technique publique de **FiveM DevManager**, une plateforme auto-h�
   <img src="assets/images/fivem-devmgr-logo-3d.png" alt="Logo FiveM DevManager" width="180" />
 </p>
 
-![Bannière FiveM DevManager](assets/images/fivem-devmgr-banner-og.png)
+[![▶ Regarder le teaser vertical FiveM DevManager](assets/images/fivem-devmgr-banner-og.png)](assets/video/fivem-devmgr-teaser-vertical.mp4)
 
-**Vidéos :** [▶ Teaser vertical 15 s](assets/video/fivem-devmgr-teaser-vertical.mp4) · [Présentation 16:9](assets/video/fivem-devmgr-presentation.webm)
+**▶ Teaser vertical 15 s** — MP4, 1080 × 1920, sans audio · [Ouvrir la vidéo](assets/video/fivem-devmgr-teaser-vertical.mp4) · [Télécharger](https://github.com/NXT-DEVOFF/fivem-devmanager/raw/main/assets/video/fivem-devmgr-teaser-vertical.mp4)
 
-> GitHub ouvre le fichier vidéo dans son lecteur lorsqu'on clique sur le lien. Les fichiers sont également téléchargeables depuis le dépôt. Tous les visuels et vidéos sont documentés dans [assets/README.md](assets/README.md).
+**Présentation 16:9** — [Ouvrir la vidéo](assets/video/fivem-devmgr-presentation.webm) · [Télécharger](https://github.com/NXT-DEVOFF/fivem-devmanager/raw/main/assets/video/fivem-devmgr-presentation.webm)
+
+> GitHub n'affiche pas les MP4 du dépôt dans un lecteur intégré au Markdown. La miniature ci-dessus sert de bouton de lecture et ouvre le lecteur GitHub ; les fichiers restent téléchargeables. Tous les visuels et vidéos sont documentés dans [assets/README.md](assets/README.md).
 
 ## Sommaire
 
