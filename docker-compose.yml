@@ -1,0 +1,25 @@
+# MariaDB locale pour le developpement.
+# Les identifiants ne sont pas versionnes : definir MARIADB_PASSWORD et
+# MARIADB_ROOT_PASSWORD dans l'environnement ou dans un .env local.
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: fivem-devmgr-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_USER: ${MARIADB_USER:-fivem}
+      MARIADB_PASSWORD: "${MARIADB_PASSWORD:?Definir MARIADB_PASSWORD dans l'environnement}"
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-fivem_devmanager}
+      MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD:?Definir MARIADB_ROOT_PASSWORD dans l'environnement}"
+    ports:
+      - "3306:3306"
+    volumes:
+      - fivem-devmgr-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  fivem-devmgr-data:

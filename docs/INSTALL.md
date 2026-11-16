@@ -16,12 +16,12 @@ Sur la MariaDB du panel (ou l'hebergement LumenWeb) :
 
 ```sql
 CREATE DATABASE fivem_devmanager;
-CREATE USER 'fivem'@'%' IDENTIFIED BY 'mot-de-passe-fort';
+CREATE USER 'fivem'@'%' IDENTIFIED BY '<MOT_DE_PASSE_FORT>';
 GRANT ALL PRIVILEGES ON fivem_devmanager.* TO 'fivem'@'%';
 FLUSH PRIVILEGES;
 ```
 
-`DATABASE_URL="mysql://fivem:mot-de-passe-fort@host:3306/fivem_devmanager"`
+`DATABASE_URL="mysql://fivem:<MOT_DE_PASSE>@host:3306/fivem_devmanager"`
 
 Si MariaDB tourne dans le meme conteneur qu'un serveur FiveM, gardez-la sur l'hote ou un
 service dedie. Le dashboard ne doit pas dependre du serveur FiveM pour demarrer.

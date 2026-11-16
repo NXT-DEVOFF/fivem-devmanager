@@ -1,0 +1,151 @@
+{
+  "_comment": "Egg Pterodactyl pour FiveM DevManager. Remplacez les valeurs SEED_ADMIN_* et les secrets apres import.",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "name": "FiveM DevManager",
+  "author": "FiveM DevManager",
+  "description": "Plateforme centralisee de developpement FiveM : sessions, editeur, fichiers distants, taches, bugs, rapports, patch notes, Discord et supervision Pterodactyl.",
+  "features": null,
+  "docker_images": {
+    "Node.js 22": "ghcr.io/parkervcp/yolks:nodejs_22"
+  },
+  "file_denylist": [],
+  "startup": "npm run start",
+  "config": {
+    "files": "{}",
+    "startup": "{\"done\": \"[server] pret\"}",
+    "logs": "{}",
+    "stop": "^^C"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\nset -e\ncd /mnt/server\n\nif [ ! -f package.json ]; then\n  echo \"[install] package.json introuvable : uploadez les sources avant installation.\"\n  exit 1\nfi\n\necho \"[install] Dependances...\"\nnpm ci --no-audit --no-fund\n\necho \"[install] Prisma generate...\"\nnpx prisma generate\n\necho \"[install] Migrations...\"\nnpx prisma migrate deploy\n\necho \"[install] Build...\"\nnpm run build\n\nif [ -n \"${SEED_ADMIN_PASSWORD}\" ] && [ -n \"${SEED_ADMIN_EMAIL}\" ]; then\n  echo \"[install] Creation du super administrateur...\"\n  npm run db:seed\nelse\n  echo \"[install] Seed ignore (SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD absents).\"\nfi\n\necho \"[install] Termine.\"\n",
+      "container": "ghcr.io/parkervcp/installers:debian",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Port applicatif",
+      "description": "Port HTTP du dashboard. Doit correspondre a l'allocation du serveur.",
+      "env_variable": "PORT",
+      "default_value": "3000",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "required|integer|between:1,65535",
+      "field_type": "text"
+    },
+    {
+      "name": "URL publique",
+      "description": "Origine exacte du dashboard (sans slash final), ex: https://devmanager.exemple.fr",
+      "env_variable": "APP_URL",
+      "default_value": "http://localhost:3000",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:300",
+      "field_type": "text"
+    },
+    {
+      "name": "Base de donnees",
+      "description": "URL MariaDB/MySQL complete (panel Pterodactyl).",
+      "env_variable": "DATABASE_URL",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:500",
+      "field_type": "text"
+    },
+    {
+      "name": "Cle de chiffrement",
+      "description": "32 octets en base64. Generer avec: node scripts/generate-secret.mjs. NE JAMAIS changer apres configuration.",
+      "env_variable": "APP_ENCRYPTION_KEY",
+      "default_value": "",
+      "user_viewable": false,
+      "user_editable": false,
+      "rules": "required|string|max:100",
+      "field_type": "text"
+    },
+    {
+      "name": "Secret applicatif",
+      "description": "Chaine aleatoire de 32+ caracteres.",
+      "env_variable": "APP_SECRET",
+      "default_value": "",
+      "user_viewable": false,
+      "user_editable": false,
+      "rules": "required|string|max:200",
+      "field_type": "text"
+    },
+    {
+      "name": "Email super admin",
+      "description": "Compte initial cree par le seed.",
+      "env_variable": "SEED_ADMIN_EMAIL",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string|max:320",
+      "field_type": "text"
+    },
+    {
+      "name": "Mot de passe super admin",
+      "description": "12 caracteres minimum. Utilise uniquement a l'installation.",
+      "env_variable": "SEED_ADMIN_PASSWORD",
+      "default_value": "",
+      "user_viewable": false,
+      "user_editable": false,
+      "rules": "nullable|string|max:200",
+      "field_type": "text"
+    },
+    {
+      "name": "Nom super admin",
+      "description": "Nom affiche du compte initial.",
+      "env_variable": "SEED_ADMIN_NAME",
+      "default_value": "Super Admin",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:80",
+      "field_type": "text"
+    },
+    {
+      "name": "Intervalle de synchronisation",
+      "description": "Secondes entre deux detections de modifications distantes (minimum 60).",
+      "env_variable": "FILE_SYNC_INTERVAL_SECONDS",
+      "default_value": "180",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:60",
+      "field_type": "text"
+    },
+    {
+      "name": "Cle API OpenAI (optionnel)",
+      "description": "Raffinement des patch notes par API compatible OpenAI. Laisser vide pour le generateur deterministe.",
+      "env_variable": "AI_API_KEY",
+      "default_value": "",
+      "user_viewable": false,
+      "user_editable": false,
+      "rules": "nullable|string|max:500",
+      "field_type": "text"
+    },
+    {
+      "name": "Modele IA",
+      "description": "Modele utilise pour les patch notes.",
+      "env_variable": "AI_MODEL",
+      "default_value": "gpt-4o-mini",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string|max:120",
+      "field_type": "text"
+    },
+    {
+      "name": "URL API IA",
+      "description": "Base URL compatible OpenAI (ex: https://api.openai.com/v1).",
+      "env_variable": "AI_BASE_URL",
+      "default_value": "https://api.openai.com/v1",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string|max:300",
+      "field_type": "text"
+    }
+  ]
+}

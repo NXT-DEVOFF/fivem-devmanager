@@ -1,8 +1,8 @@
-# FiveM DevManager — Documentation
+# FiveM DevManager — Code source et documentation
 
-Documentation technique publique de **FiveM DevManager**, une plateforme auto-hébergée pour développer, gérer et superviser un serveur FiveM.
+Code source et documentation technique publique de **FiveM DevManager**, une plateforme auto-hébergée pour développer, gérer et superviser un serveur FiveM.
 
-> **État du projet :** le code, le build et les tests sont prêts. Le site public `https://bl-host.site` n'est pas encore déployé ; il affiche encore la page par défaut de l'hébergeur. Cette documentation ne contient aucun secret.
+> **État du projet :** le code, le build et les tests sont prêts. Le site public `https://bl-host.site` n'est pas encore déployé ; il affiche encore la page par défaut de l'hébergeur. Le fichier `.env` publié est un modèle vide : ce dépôt ne contient aucun secret d'exploitation.
 
 ## Aperçu
 
@@ -112,6 +112,21 @@ Ouvrir `http://localhost:3000`, se connecter avec le compte `SEED_ADMIN_*`, chan
 
 Consulter [INSTALL.md](docs/INSTALL.md) pour la procédure complète et [CONFIGURATION.md](docs/CONFIGURATION.md) pour les variables.
 
+## Code source
+
+Le dépôt contient le code de l'application et ses composants principaux :
+
+- `src/` : interface Next.js, routes API, services serveur et temps réel ;
+- `prisma/` : schéma, migrations et seeds ;
+- `blhost-license/` : gate de licence Keygate (édition Commercial) ;
+- `fivem-resources/fdm-anticheat/` : agent anticheat FiveM en mode rapport ;
+- `public/` : visuels, carte GTA V et teaser vidéo utilisés par le panel ;
+- `scripts/`, `tests/` : vérifications et tests.
+
+Le fichier `.env` versionné est un **modèle public vide**. Il ne contient ni mot de passe, ni token, ni clé. Pour travailler, renseigner les valeurs dans un `.env` local non versionné.
+
+Le service séparé `website-license-pro` et les scripts d'exploitation internes (`deploy/`) ne sont pas publiés dans ce dépôt.
+
 ## Variables essentielles
 
 | Variable | Rôle |
@@ -124,7 +139,7 @@ Consulter [INSTALL.md](docs/INSTALL.md) pour la procédure complète et [CONFIGU
 | `ANTICHEAT_INGEST_TOKEN` | Token Bearer de l'agent anticheat |
 | `LICENSE_KEY` | Licence Self-hosted Commercial, vide en Community |
 
-Ne jamais commiter `.env` ni une clé. Les clés Pterodactyl, SFTP et Discord se configurent dans l'interface et sont chiffrées en base.
+Le `.env` du dépôt est un modèle vide : ne jamais y ajouter de vraie valeur. Les clés Pterodactyl, SFTP et Discord se configurent dans l'interface et sont chiffrées en base.
 
 ## Déploiement
 
@@ -157,7 +172,7 @@ Voir [SECURITY.md](docs/SECURITY.md).
 
 ## Documentation complémentaire
 
-La version Notion contient les guides détaillés d'installation, de déploiement, d'utilisation et d'exploitation. Ce dépôt GitHub publie la documentation technique versionnable ; il ne contient ni code source, ni secrets, ni données d'exploitation.
+La version Notion contient les guides détaillés d'installation, de déploiement, d'utilisation et d'exploitation. Ce dépôt GitHub publie le code source et la documentation technique versionnable ; il ne contient ni secrets, ni tokens, ni données d'exploitation.
 
 ## Licence
 
@@ -165,4 +180,4 @@ Le projet est distribué sous **AGPL-3.0-only**. Voir [LICENSE](LICENSE) et [NOT
 
 ## Contribution
 
-Les corrections de documentation sont bienvenues via une offre de pull request. Ne jamais inclure de secrets, d'adresses internes, de journaux d'exploitation ou de données personnelles dans une contribution.
+Les corrections de code et de documentation sont bienvenues via une offre de pull request. Ne jamais inclure de secrets, de tokens, d'adresses internes, de journaux d'exploitation ou de données personnelles dans une contribution.

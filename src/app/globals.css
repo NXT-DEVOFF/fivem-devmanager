@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --ring: 88 101 242;
+  color-scheme: dark;
+}
+
+* {
+  border-color: #252d3b;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  scrollbar-color: #2f394b #090b10;
+}
+
+body {
+  background-color: #090b10;
+  color: #f8fafc;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11", "ss01";
+  font-variant-ligatures: contextual;
+}
+
+/* Fond premium : halos subtils + vignette */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(1000px 560px at 12% -12%, rgba(88, 101, 242, 0.18), transparent 62%),
+    radial-gradient(780px 460px at 102% -4%, rgba(56, 189, 248, 0.09), transparent 58%),
+    radial-gradient(620px 420px at 50% 115%, rgba(129, 140, 248, 0.07), transparent 60%),
+    linear-gradient(180deg, rgba(9, 11, 16, 0) 0%, #090b10 78%);
+}
+
+::selection {
+  background: rgba(88, 101, 242, 0.35);
+  color: #fff;
+}
+
+/* Scrollbars sobres */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b3547;
+  border-radius: 999px;
+  border: 2px solid #090b10;
+  transition: background 0.15s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3d4a63;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+  }
+
+  /* Les champs n'héritent plus d'un fond navigateur clair. */
+  input,
+  select,
+  textarea {
+    color-scheme: dark;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: var(--font-mono);
+    font-variant-ligatures: none;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-xl border border-border bg-card/80 shadow-panel backdrop-blur-sm;
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      background-color 0.18s ease;
+  }
+
+  /* À réserver aux cartes cliquables / interactives. */
+  .panel-interactive {
+    @apply panel;
+  }
+  .panel-interactive:hover {
+    @apply border-border-strong;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.03) inset,
+      0 18px 40px -24px rgba(8, 11, 20, 0.9);
+    transform: translateY(-1px);
+  }
+
+  .panel-header {
+    @apply flex items-center justify-between gap-3 border-b border-border px-5 py-4;
+  }
+
+  .panel-body {
+    @apply p-5;
+  }
+
+  .subtle-grid {
+    background-image:
+      linear-gradient(rgba(37, 45, 59, 0.28) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37, 45, 59, 0.28) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .glass {
+    background: linear-gradient(180deg, rgba(21, 27, 38, 0.92), rgba(16, 20, 29, 0.92));
+    backdrop-filter: blur(12px);
+  }
+
+  .text-gradient {
+    background: linear-gradient(92deg, #ffffff 0%, #c7ccfb 45%, #8b95f7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+    font-variant-ligatures: none;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  /* Étiquette compacte (compteurs, filtres, raccourcis). */
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-md border border-border bg-white/[0.04] px-2 py-0.5 text-[11px] text-muted;
+  }
+
+  /* Séparateur discret utilisé dans les listes denses. */
+  .divider {
+    @apply border-t border-border/70;
+  }
+}
+
+/* Monaco : theme sombre force */
+.monaco-editor .margin,
+.monaco-editor-background {
+  background-color: #0d1117 !important;
+}
+
+/* Animations d'apparition sobres */
+.animate-in {
+  animation: fade-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

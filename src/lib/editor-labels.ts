@@ -1,0 +1,15 @@
+export const FIELD_LABELS = [
+  ".lua",
+  ".json",
+  ".cfg",
+  ".js",
+  ".ts",
+  ".html",
+  ".css",
+  ".sql",
+  ".xml",
+  ".md",
+  ".yml",
+  ".yaml",
+  ".txt",
+] as const;

@@ -1,0 +1,1173 @@
+// FiveM DevManager - schema de base de donnees (MySQL/MariaDB)
+// Toutes les valeurs sensibles (cles API, webhooks, SFTP) sont stockees
+// chiffrees (AES-256-GCM) dans des colonnes *Enc.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  LEAD_DEV
+  DEVELOPER
+}
+
+enum DevSessionStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum DevSessionEventType {
+  START
+  PAUSE
+  RESUME
+  END
+  NOTE
+  TASK_SWITCH
+  FILE_CHANGE
+  IDLE_WARNING
+  IDLE_ACK
+  VALIDATION
+}
+
+enum TaskStatus {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  TESTING
+  REVIEW
+  DONE
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskCategory {
+  SCRIPT
+  UI
+  MAPPING
+  VEHICLES
+  OPTIMIZATION
+  DATABASE
+  CONFIG
+  SECURITY
+  BUGFIX
+  GAMEPLAY
+  ADMINISTRATION
+}
+
+enum BugSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum BugStatus {
+  NEW
+  TRIAGE
+  FIXING
+  TESTING
+  FIXED
+  CLOSED
+}
+
+enum FileChangeType {
+  FILE_CREATED
+  FILE_MODIFIED
+  FILE_DELETED
+  FILE_RENAMED
+  FOLDER_CREATED
+  FOLDER_DELETED
+}
+
+enum ChangeSource {
+  EDITOR
+  UPLOAD
+  API
+  SYNC
+  DEPLOYMENT
+  ROLLBACK
+}
+
+enum DeploymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DEPLOYED
+  FAILED
+  ROLLED_BACK
+}
+
+enum PatchNoteStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+}
+
+enum WebhookKind {
+  PATCH_NOTES
+  REPORTS
+  ERRORS
+  SESSIONS
+  NOTIFICATIONS
+  DEPLOYMENTS
+}
+
+enum AuditResult {
+  SUCCESS
+  FAILURE
+  DENIED
+}
+
+enum SnapshotKind {
+  MANUAL
+  PRE_WRITE
+  PRE_DEPLOYMENT
+  SESSION_END
+}
+
+enum SftpAuthType {
+  KEY
+  PASSWORD
+}
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  MITIGATED
+  RESOLVED
+}
+
+enum MaintenanceStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum PlayerStatus {
+  ACTIVE
+  WATCHED
+  SUSPENDED
+  BANNED
+}
+
+enum SanctionType {
+  WARNING
+  MUTE
+  KICK
+  TEMP_BAN
+  PERMANENT_BAN
+}
+
+enum EventStatus {
+  DRAFT
+  PLANNED
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum AnticheatSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AnticheatStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  FALSE_POSITIVE
+}
+
+// ---------------------------------------------------------------------------
+// Utilisateurs / authentification
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique @db.VarChar(320)
+  username     String  @unique
+  displayName  String
+  passwordHash String
+  role         Role    @default(DEVELOPER)
+  isActive     Boolean @default(true)
+  avatarColor  String  @default("#5865F2")
+  jobTitle     String?
+  discordId    String?
+  timezone     String  @default("Europe/Paris")
+
+  // Permissions granulaires : la liste "granted" s'ajoute aux defauts du role,
+  // la liste "denied" retire des permissions au role.
+  permissionsGranted Json?
+  permissionsDenied  Json?
+
+  twoFactorEnabled       Boolean @default(false)
+  twoFactorSecret        String?
+  twoFactorRecoveryCodes Json?
+  mustChangePassword     Boolean @default(false)
+
+  failedLoginCount  Int       @default(0)
+  lockedUntil       DateTime?
+  lastLoginAt       DateTime?
+  lastSeenAt        DateTime?
+  notificationPrefs Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authSessions      AuthSession[]
+  loginEvents       LoginEvent[]
+  devSessions       DevSession[]
+  sessionEvents     DevSessionEvent[]
+  tasksAssigned     Task[]              @relation("TaskAssignee")
+  tasksCreated      Task[]              @relation("TaskCreator")
+  taskComments      TaskComment[]
+  bugsReported      Bug[]               @relation("BugReporter")
+  bugsAssigned      Bug[]               @relation("BugAssignee")
+  bugComments       BugComment[]
+  fileChanges       FileChange[]
+  reports           Report[]
+  patchNotes        PatchNote[]         @relation("PatchNoteAuthor")
+  approvedNotes     PatchNote[]         @relation("PatchNoteApprover")
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  resourcesOwned    Resource[]          @relation("ResourceOwner")
+  deployments       Deployment[]        @relation("DeploymentRequester")
+  approvedDeploys   Deployment[]        @relation("DeploymentApprover")
+  snapshots         Snapshot[]
+  fileLocks         TrackedFile[]       @relation("FileLockOwner")
+  attachments       TaskAttachment[]
+  checklistItems    TaskChecklistItem[] @relation("ChecklistAssignee")
+  snippets          Snippet[]
+  sprintsCreated    Sprint[]            @relation("SprintCreator")
+  incidentsReported Incident[]          @relation("IncidentReporter")
+  incidentsAssigned Incident[]          @relation("IncidentAssignee")
+
+  knowledgeArticles KnowledgeArticle[] @relation("KnowledgeAuthor")
+  knowledgeUpdates  KnowledgeArticle[] @relation("KnowledgeUpdater")
+  maintenanceWindows MaintenanceWindow[] @relation("MaintenanceCreator")
+
+  anticheatAcknowledged AnticheatEvent[] @relation("AnticheatAcknowledger")
+  anticheatResolved     AnticheatEvent[] @relation("AnticheatResolver")
+
+  playersCreated   Player[]         @relation("PlayerCreator")
+  sanctionsIssued  PlayerSanction[] @relation("SanctionIssuer")
+  sanctionsRevoked PlayerSanction[] @relation("SanctionRevoker")
+  eventsOrganized  ServerEvent[]    @relation("EventOrganizer")
+
+  @@index([role])
+}
+
+model AuthSession {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  ip         String?   @db.VarChar(45)
+  userAgent  String?   @db.VarChar(512)
+  deviceName String?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String   @db.VarChar(320)
+  success   Boolean
+  reason    String?  @db.VarChar(512)
+  ip        String?  @db.VarChar(45)
+  userAgent String?  @db.VarChar(512)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([email, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Sessions de developpement
+// ---------------------------------------------------------------------------
+
+model DevSession {
+  id     String           @id @default(cuid())
+  number Int              @unique @default(autoincrement())
+  userId String
+  status DevSessionStatus @default(ACTIVE)
+
+  startedAt                DateTime  @default(now())
+  endedAt                  DateTime?
+  lastResumedAt            DateTime?
+  lastActivityAt           DateTime  @default(now())
+  accumulatedActiveSeconds Int       @default(0)
+  idleTimeoutMinutes       Int       @default(15)
+  idleWarningSentAt        DateTime?
+
+  summary       String? @db.Text
+  notes         String? @db.Text
+  closedById    String?
+  currentTaskId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       Task[]            @relation("SessionTasks")
+  events      DevSessionEvent[]
+  fileChanges FileChange[]
+  report      Report?
+  patchNotes  PatchNote[]
+
+  @@index([userId, status])
+  @@index([startedAt])
+}
+
+model DevSessionEvent {
+  id        String              @id @default(cuid())
+  sessionId String
+  userId    String
+  type      DevSessionEventType
+  message   String?             @db.Text
+  taskId    String?
+  metadata  Json?
+  createdAt DateTime            @default(now())
+
+  session DevSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Taches
+// ---------------------------------------------------------------------------
+
+model Task {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  title       String       @db.VarChar(200)
+  description String?      @db.Text
+  status      TaskStatus   @default(BACKLOG)
+  priority    TaskPriority @default(MEDIUM)
+  category    TaskCategory @default(SCRIPT)
+
+  assigneeId String?
+  creatorId  String
+  parentId   String?
+
+  resource String? @db.VarChar(120)
+  files    Json?
+  tags     Json?
+
+  dueDate          DateTime?
+  estimatedMinutes Int?
+  timeSpentSeconds Int       @default(0)
+
+  autoValidate       Boolean   @default(false)
+  requiresReview     Boolean   @default(true)
+  validationCriteria Json?
+  completedAt        DateTime?
+  validatedAt        DateTime?
+  validatedById      String?
+  validationKind     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignee User?  @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  creator  User   @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  parent   Task?  @relation("TaskTree", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks Task[] @relation("TaskTree")
+
+  comments     TaskComment[]
+  checklist    TaskChecklistItem[]
+  attachments  TaskAttachment[]
+  fileChanges  FileChange[]
+  sessions     DevSession[]        @relation("SessionTasks")
+  bugs         Bug[]
+  dependencies TaskDependency[]    @relation("TaskDependencySource")
+  dependents   TaskDependency[]    @relation("TaskDependencyTarget")
+
+  sprintId String?
+  sprint   Sprint? @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([assigneeId])
+  @@index([resource])
+  @@index([sprintId])
+}
+
+model TaskDependency {
+  id          String @id @default(cuid())
+  taskId      String
+  dependsOnId String
+  task        Task   @relation("TaskDependencySource", fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOn   Task   @relation("TaskDependencyTarget", fields: [dependsOnId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, dependsOnId])
+}
+
+model TaskChecklistItem {
+  id         String   @id @default(cuid())
+  taskId     String
+  label      String
+  done       Boolean  @default(false)
+  assigneeId String?
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  task     Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  assignee User? @relation("ChecklistAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  @@index([taskId])
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  taskId    String
+  authorId  String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, createdAt])
+}
+
+model TaskAttachment {
+  id           String   @id @default(cuid())
+  taskId       String
+  name         String
+  mimeType     String
+  size         Int
+  storageKey   String   @db.VarChar(512)
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  task       Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// ---------------------------------------------------------------------------
+// Bugs
+// ---------------------------------------------------------------------------
+
+model Bug {
+  id          String      @id @default(cuid())
+  code        String      @unique
+  title       String      @db.VarChar(200)
+  description String      @db.Text
+  severity    BugSeverity @default(MEDIUM)
+  status      BugStatus   @default(NEW)
+
+  resource       String?
+  filePath       String? @db.VarChar(512)
+  reproduceSteps String? @db.Text
+  expectedResult String? @db.Text
+  actualResult   String? @db.Text
+  logs           String? @db.Text
+  screenshots    Json?
+
+  reporterId String
+  assigneeId String?
+  taskId     String?
+
+  fixValidated     Boolean   @default(false)
+  fixedAt          DateTime?
+  closedAt         DateTime?
+  autoCloseBlocked Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reporter User         @relation("BugReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  assignee User?        @relation("BugAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  task     Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  comments BugComment[]
+  changes  FileChange[]
+
+  @@index([status])
+  @@index([severity])
+  @@index([assigneeId])
+}
+
+model BugComment {
+  id        String   @id @default(cuid())
+  bugId     String
+  authorId  String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  bug       Bug      @relation(fields: [bugId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([bugId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Ressources / fichiers / modifications
+// ---------------------------------------------------------------------------
+
+model Resource {
+  id                  String  @id @default(cuid())
+  name                String  @unique
+  folder              String  @db.VarChar(512)
+  state               String  @default("unknown")
+  version             String?
+  author              String?
+  description         String? @db.Text
+  dependencies        Json?
+  missingDependencies Json?
+  manifest            Json?
+  fileCount           Int     @default(0)
+  sizeBytes           BigInt  @default(0)
+
+  ownerId        String?
+  lastModifiedAt DateTime?
+  lastDeployAt   DateTime?
+  lastRunState   String?
+  lastRunStateAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner User? @relation("ResourceOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([name])
+}
+
+model TrackedFile {
+  id               String    @id @default(cuid())
+  path             String    @unique @db.VarChar(512)
+  resource         String?
+  hash             String?
+  size             Int       @default(0)
+  remoteModifiedAt DateTime?
+  version          Int       @default(1)
+
+  lockedById    String?
+  lockedAt      DateTime?
+  lockExpiresAt DateTime?
+
+  lastCheckedAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lockedBy User? @relation("FileLockOwner", fields: [lockedById], references: [id], onDelete: SetNull)
+
+  @@index([resource])
+  @@index([lockedById])
+}
+
+model FileChange {
+  id         String         @id @default(cuid())
+  path       String         @db.VarChar(512)
+  resource   String?
+  changeType FileChangeType
+  source     ChangeSource   @default(EDITOR)
+
+  hashBefore String?
+  hashAfter  String?
+  sizeBefore Int?
+  sizeAfter  Int?
+  diff       String? @db.Text
+  oldContent String? @db.Text
+  newContent String? @db.Text
+
+  userId          String?
+  sessionId       String?
+  taskId          String?
+  bugId           String?
+  taskMatchScore  Int?
+  taskMatchReason String? @db.Text
+
+  validated Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user    User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  session DevSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  task    Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  bug     Bug?        @relation(fields: [bugId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([taskId])
+  @@index([path])
+  @@index([sessionId])
+}
+
+// ---------------------------------------------------------------------------
+// Rapports / patch notes / Discord
+// ---------------------------------------------------------------------------
+
+model Report {
+  id        String @id @default(cuid())
+  number    Int    @unique @default(autoincrement())
+  sessionId String @unique
+  userId    String
+
+  startedAt       DateTime
+  endedAt         DateTime
+  durationSeconds Int      @default(0)
+  activeSeconds   Int      @default(0)
+
+  data      Json
+  summary   String?  @db.Text
+  aiSummary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  session DevSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model PatchNote {
+  id           String          @id @default(cuid())
+  version      String
+  title        String
+  subtitle     String?
+  internalBody String          @db.Text // markdown interne (technique)
+  publicBody   String          @db.Text // markdown public (joueurs)
+  status       PatchNoteStatus @default(DRAFT)
+
+  sessionId    String?
+  authorId     String
+  approvedById String?
+  approvedAt   DateTime?
+  scheduledAt  DateTime?
+  publishedAt  DateTime?
+
+  aiGenerated      Boolean @default(false)
+  contentHash      String?
+  discordMessageId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  session    DevSession?       @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  author     User              @relation("PatchNoteAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  approvedBy User?             @relation("PatchNoteApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  deliveries DiscordDelivery[]
+
+  @@index([status])
+  @@index([version])
+}
+
+model DiscordWebhook {
+  id         String      @id @default(cuid())
+  name       String
+  kind       WebhookKind
+  urlEnc     String      @db.Text
+  enabled    Boolean     @default(true)
+  username   String?
+  avatarUrl  String?     @db.VarChar(512)
+  lastUsedAt DateTime?
+  lastError  String?     @db.Text
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  deliveries DiscordDelivery[]
+
+  @@index([kind, enabled])
+}
+
+model DiscordDelivery {
+  id          String   @id @default(cuid())
+  webhookId   String
+  patchNoteId String?
+  payloadHash String
+  status      String   @default("PENDING")
+  httpStatus  Int?
+  error       String?  @db.Text
+  messageId   String?
+  createdAt   DateTime @default(now())
+
+  webhook   DiscordWebhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  patchNote PatchNote?     @relation(fields: [patchNoteId], references: [id], onDelete: SetNull)
+
+  @@unique([webhookId, payloadHash])
+  @@index([patchNoteId])
+}
+
+// ---------------------------------------------------------------------------
+// Deploiements / snapshots
+// ---------------------------------------------------------------------------
+
+model Deployment {
+  id       String           @id @default(cuid())
+  resource String
+  status   DeploymentStatus @default(PENDING)
+  title    String           @db.VarChar(200)
+
+  requestedById  String
+  approvedById   String?
+  approvedAt     DateTime?
+  rejectedReason String?   @db.Text
+
+  changes    Json
+  files      Json?
+  logs       String? @db.Text
+  snapshotId String?
+
+  deployedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  requestedBy User  @relation("DeploymentRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  approvedBy  User? @relation("DeploymentApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([resource])
+}
+
+model Snapshot {
+  id          String       @id @default(cuid())
+  label       String
+  kind        SnapshotKind @default(MANUAL)
+  resource    String
+  path        String?      @db.VarChar(512)
+  storageKey  String       @db.VarChar(512)
+  sizeBytes   BigInt       @default(0)
+  checksum    String?
+  fileCount   Int          @default(0)
+  createdById String
+  createdAt   DateTime     @default(now())
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([resource, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Snippets (bibliotheque de code partagee)
+// ---------------------------------------------------------------------------
+
+model Snippet {
+  id          String  @id @default(cuid())
+  title       String  @db.VarChar(160)
+  description String? @db.Text
+  language    String  @default("lua") @db.VarChar(40)
+  code        String  @db.LongText
+  tags        Json?
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([language])
+  @@index([updatedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Sprints / objectifs
+// ---------------------------------------------------------------------------
+
+model Sprint {
+  id     String       @id @default(cuid())
+  name   String       @db.VarChar(120)
+  goal   String?      @db.Text
+  status SprintStatus @default(PLANNED)
+
+  startsAt    DateTime
+  endsAt      DateTime
+  completedAt DateTime?
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User   @relation("SprintCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@index([status, startsAt])
+}
+
+// ---------------------------------------------------------------------------
+// Incidents de production
+// ---------------------------------------------------------------------------
+
+model Incident {
+  id          String         @id @default(cuid())
+  number      Int            @unique @default(autoincrement())
+  title       String         @db.VarChar(200)
+  description String         @db.Text
+  severity    BugSeverity    @default(MEDIUM)
+  status      IncidentStatus @default(OPEN)
+
+  resource String? @db.VarChar(120)
+  impact   String? @db.Text
+
+  reportedById String
+  assigneeId   String?
+
+  startedAt      DateTime  @default(now())
+  acknowledgedAt DateTime?
+  mitigatedAt    DateTime?
+  resolvedAt     DateTime?
+  resolution     String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reportedBy User  @relation("IncidentReporter", fields: [reportedById], references: [id], onDelete: Cascade)
+  assignee   User? @relation("IncidentAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  @@index([status, severity])
+  @@index([startedAt])
+  @@index([assigneeId])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications / audit / configuration
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String?   @db.Text
+  link      String?   @db.VarChar(512)
+  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  actorId    String?
+  actorLabel String      @db.VarChar(191)
+  action     String      @db.VarChar(191)
+  targetType String?
+  targetId   String?
+  result     AuditResult @default(SUCCESS)
+  ip         String?     @db.VarChar(45)
+  userAgent  String?     @db.VarChar(512)
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([actorId, createdAt])
+}
+
+model PterodactylConfig {
+  id                   String    @id @default(cuid())
+  name                 String    @default("Principal")
+  panelUrl             String    @db.VarChar(512)
+  serverId             String
+  serverIdentifier     String?
+  nodeId               String?
+  clientApiKeyEnc      String    @db.Text
+  applicationApiKeyEnc String?   @db.Text
+  isDefault            Boolean   @default(true)
+  statusCache          Json?
+  lastCheckedAt        DateTime?
+  lastError            String?   @db.Text
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model SftpConfig {
+  id            String       @id @default(cuid())
+  name          String       @default("Principal")
+  host          String
+  port          Int          @default(2022)
+  username      String
+  authType      SftpAuthType @default(KEY)
+  passwordEnc   String?      @db.Text
+  privateKeyEnc String?      @db.Text
+  passphraseEnc String?      @db.Text
+  remoteRoot    String       @default("/") @db.VarChar(512)
+  isDefault     Boolean      @default(true)
+  lastCheckAt   DateTime?
+  lastError     String?      @db.Text
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model AppSetting {
+  key         String   @id
+  value       Json
+  encrypted   Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+}
+
+// ---------------------------------------------------------------------------
+// Surveillance
+// ---------------------------------------------------------------------------
+
+model MetricSample {
+  id               String   @id @default(cuid())
+  state            String   @default("unknown") @db.VarChar(32)
+  cpuPercent       Float    @default(0)
+  memoryBytes      BigInt   @default(0)
+  memoryLimitBytes BigInt   @default(0)
+  diskBytes        BigInt   @default(0)
+  diskLimitBytes   BigInt   @default(0)
+  networkRxBytes   BigInt   @default(0)
+  networkTxBytes   BigInt   @default(0)
+  uptimeSeconds    Int      @default(0)
+  recordedAt       DateTime @default(now())
+
+  @@index([recordedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Base de connaissances
+// ---------------------------------------------------------------------------
+
+model KnowledgeArticle {
+  id       String  @id @default(cuid())
+  title    String  @db.VarChar(160)
+  category String  @default("Général") @db.VarChar(80)
+  summary  String? @db.Text
+  content  String  @db.LongText
+  tags     Json?
+  pinned   Boolean @default(false)
+
+  authorId    String
+  updatedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author    User  @relation("KnowledgeAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  updatedBy User? @relation("KnowledgeUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([category])
+  @@index([updatedAt])
+  @@index([authorId])
+  @@index([pinned])
+}
+
+// ---------------------------------------------------------------------------
+// Maintenance planifiee
+// ---------------------------------------------------------------------------
+
+model MaintenanceWindow {
+  id          String            @id @default(cuid())
+  number      Int               @unique @default(autoincrement())
+  title       String            @db.VarChar(200)
+  description String            @db.Text
+  scope       String?           @db.VarChar(120)
+  impact      String?           @db.Text
+  status      MaintenanceStatus @default(PLANNED)
+
+  scheduledStart DateTime
+  scheduledEnd   DateTime
+  startedAt      DateTime?
+  completedAt    DateTime?
+  canceledAt     DateTime?
+  cancelReason   String?  @db.Text
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User @relation("MaintenanceCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([status, scheduledStart])
+  @@index([scheduledStart])
+  @@index([createdById])
+}
+
+// ---------------------------------------------------------------------------
+// Joueurs et sanctions de moderation
+// ---------------------------------------------------------------------------
+
+model Player {
+  id          String       @id @default(cuid())
+  license     String       @unique @db.VarChar(120)
+  displayName String       @db.VarChar(120)
+  discordId   String?      @db.VarChar(40)
+  steamHex    String?      @db.VarChar(60)
+  status      PlayerStatus @default(ACTIVE)
+  notes       String?      @db.Text
+  lastSeenAt  DateTime?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User?            @relation("PlayerCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  sanctions PlayerSanction[]
+
+  @@index([status])
+  @@index([displayName])
+  @@index([lastSeenAt])
+}
+
+model PlayerSanction {
+  id            String       @id @default(cuid())
+  number        Int          @unique @default(autoincrement())
+  playerId      String
+  type          SanctionType
+  reason        String       @db.Text
+  evidence      String?      @db.Text
+  durationHours Int?
+  startsAt      DateTime     @default(now())
+  endsAt        DateTime?
+  revokedAt     DateTime?
+  revokedReason String?      @db.Text
+  revokedById   String?
+  issuedById    String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  issuedBy  User   @relation("SanctionIssuer", fields: [issuedById], references: [id], onDelete: Cascade)
+  revokedBy User?  @relation("SanctionRevoker", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  @@index([playerId, createdAt])
+  @@index([type])
+  @@index([endsAt])
+}
+
+// ---------------------------------------------------------------------------
+// Evenements communautaires
+// ---------------------------------------------------------------------------
+
+model ServerEvent {
+  id           String      @id @default(cuid())
+  number       Int         @unique @default(autoincrement())
+  title        String      @db.VarChar(160)
+  description  String      @db.Text
+  category     String      @default("Communaute") @db.VarChar(60)
+  status       EventStatus @default(PLANNED)
+  location     String?     @db.VarChar(120)
+  startsAt     DateTime
+  endsAt       DateTime
+  maxPlayers   Int?
+  reward       String?     @db.VarChar(160)
+  requirements String?     @db.Text
+
+  organizerId  String
+  startedAt    DateTime?
+  completedAt  DateTime?
+  canceledAt   DateTime?
+  cancelReason String?     @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizer User @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+
+  @@index([status, startsAt])
+  @@index([startsAt])
+  @@index([organizerId])
+}
+
+// ---------------------------------------------------------------------------
+// Anticheat (mode rapport : aucune punition automatique)
+// ---------------------------------------------------------------------------
+
+model AnticheatEvent {
+  id       String @id @default(cuid())
+  // Identifiant fourni par l'agent : garantit l'idempotence des renvois.
+  eventId  String @unique @db.VarChar(120)
+  detection String @db.VarChar(80)
+  category  String @default("custom") @db.VarChar(40)
+  severity  AnticheatSeverity @default(MEDIUM)
+  status    AnticheatStatus   @default(OPEN)
+
+  playerLicense String? @db.VarChar(120)
+  playerName    String? @db.VarChar(120)
+  playerNetId   Int?
+  playerSource  Int?
+  identifiers   Json?
+  details       Json?
+
+  serverId  String? @db.VarChar(120)
+  resource  String? @db.VarChar(120)
+
+  occurredAt  DateTime
+  // Une alerte repetee est agregee : occurrences et derniere detection.
+  lastSeenAt  DateTime @default(now())
+  occurrences Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+  resolvedAt       DateTime?
+  resolvedById     String?
+  resolution       String?   @db.Text
+
+  updatedAt DateTime @updatedAt
+
+  acknowledgedBy User? @relation("AnticheatAcknowledger", fields: [acknowledgedById], references: [id], onDelete: SetNull)
+  resolvedBy     User? @relation("AnticheatResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([severity, status])
+  @@index([playerLicense, createdAt])
+  @@index([detection, createdAt])
+  @@index([detection, playerLicense, createdAt])
+  @@index([status, createdAt])
+}
+
+model AnticheatAgent {
+  id              String   @id @default(cuid())
+  serverId        String   @unique @db.VarChar(120)
+  version         String?  @db.VarChar(40)
+  resourceName    String?  @db.VarChar(120)
+  queueSize       Int      @default(0)
+  playerCount     Int      @default(0)
+  detectionsTotal Int      @default(0)
+  lastError       String?  @db.VarChar(255)
+  firstSeenAt     DateTime @default(now())
+  lastSeenAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([lastSeenAt])
+}
