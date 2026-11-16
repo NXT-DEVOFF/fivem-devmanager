@@ -1,0 +1,19 @@
+# Secrets et environnements
+.env
+.env.*
+!.env.example
+
+# Dépendances et builds
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+# Données locales
+var/
+release/
+
+# Système
+.DS_Store
+Thumbs.db
