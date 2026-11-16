@@ -4,6 +4,18 @@ Documentation technique publique de **FiveM DevManager**, une plateforme auto-h�
 
 > **État du projet :** le code, le build et les tests sont prêts. Le site public `https://bl-host.site` n'est pas encore déployé ; il affiche encore la page par défaut de l'hébergeur. Cette documentation ne contient aucun secret.
 
+## Aperçu
+
+<p align="center">
+  <img src="assets/images/fivem-devmgr-logo-3d.png" alt="Logo FiveM DevManager" width="180" />
+</p>
+
+![Bannière FiveM DevManager](assets/images/fivem-devmgr-banner-og.png)
+
+**Vidéos :** [▶ Teaser vertical 15 s](assets/video/fivem-devmgr-teaser-vertical.mp4) · [Présentation 16:9](assets/video/fivem-devmgr-presentation.webm)
+
+> GitHub ouvre le fichier vidéo dans son lecteur lorsqu'on clique sur le lien. Les fichiers sont également téléchargeables depuis le dépôt. Tous les visuels et vidéos sont documentés dans [assets/README.md](assets/README.md).
+
 ## Sommaire
 
 - [Architecture](docs/ARCHITECTURE.md)
