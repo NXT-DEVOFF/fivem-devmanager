@@ -65,20 +65,6 @@ ANTICHEAT_INGEST_TOKEN=
 
 Laisser vide désactive l'ingestion. Générer une valeur aléatoire et la partager uniquement avec l'agent FiveM.
 
-### Keygate
-
-```dotenv
-KEYGATE_URL=https://licences.bl-host.site
-LICENSE_KEY=
-LICENSE_ENFORCE=false
-# LICENSE_IDENTIFIER=
-# LICENSE_GRACE_HOURS=72
-# LICENSE_CHECK_INTERVAL_MINUTES=60
-```
-
-- **Community AGPL** : laisser vide, `LICENSE_ENFORCE=false`.
-- **Self-hosted Commercial** : renseigner une clé dédiée après émission.
-
 ### Mentions légales
 
 ```dotenv

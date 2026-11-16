@@ -171,7 +171,7 @@ const FAQ = [
   {
     question: "Quelle différence entre Community, Self-hosted Commercial et Managed ?",
     answer:
-      "Le code est le même. La Community Edition est gratuite sous AGPL-3.0 et s'auto-héberge sans support contractuel. L'offre Self-hosted Commercial ajoute une licence commerciale, le support, les garanties et le gate Keygate. En Managed, BL-Host fournit l'instance, les sauvegardes, la supervision, les mises à jour et le SLA.",
+      "Le code est le même. La Community Edition est gratuite sous AGPL-3.0 et s'auto-héberge sans support contractuel. L'offre Self-hosted Commercial ajoute le support, les garanties et les mises à jour. En Managed, BL-Host fournit l'instance, les sauvegardes, la supervision, les mises à jour et le SLA.",
   },
   {
     question: "Quels sont les prérequis d'une installation auto-hébergée ?",
@@ -847,7 +847,7 @@ export default function PresentationPage() {
                   </div>
                   <p className="mt-2 text-[12px] leading-6 text-muted">
                     Le cœur est distribué sous AGPL-3.0-only. L&apos;édition commerciale ajoute le
-                    support, les garanties et le gate Keygate. Les secrets d&apos;exploitation ne
+                    support, les garanties et les mises à jour. Les secrets d&apos;exploitation ne
                     sont jamais publiés.
                   </p>
                   <a

@@ -25,7 +25,6 @@
     "test:api": "node scripts/api-smoke.mjs",
     "lint": "eslint . --ext .ts,.tsx",
     "verify": "node scripts/verify.mjs",
-    "verify:all": "node scripts/verify-all.mjs",
     "secret:generate": "node scripts/generate-secret.mjs"
   },
   "prisma": {

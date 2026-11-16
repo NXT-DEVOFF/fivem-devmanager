@@ -7,14 +7,9 @@
  *   globalThis.__fdmInstallIo, ce qui permet de reutiliser le code TypeScript.
  */
 import { createServer } from "node:http";
-import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
 import next from "next";
 import { Server as SocketServer } from "socket.io";
-
-// Gate de licence Keygate (module commun site + bot, voir blhost-license/).
-const require = createRequire(import.meta.url);
-const { enforceLicense, startLicenseWatch } = require("./blhost-license/gate.js");
 
 // `npm run dev` passe --dev ; `npm run start` force la production.
 const dev = process.argv.includes("--dev");
@@ -58,10 +53,6 @@ async function installRealtime() {
 }
 
 async function main() {
-  // Blocage licence : sans licence valide, le process s'arrete ici avant
-  // toute ecoute. (auto = bloque seulement si LICENSE_KEY est configure)
-  const license = await enforceLicense();
-
   await app.prepare();
 
   httpServer = createServer((req, res) => {
@@ -83,16 +74,6 @@ async function main() {
 
   httpServer.listen(port, hostname, () => {
     console.log(`[server] pret sur http://${hostname}:${port}`);
-
-    // Re-verification periodique : licence revoquee/expiree => arret.
-    if (license.enforced) {
-      startLicenseWatch({
-        onRevoked: (result) => {
-          console.error(`[server] licence invalide (${result.reason}) : arret du serveur.`);
-          shutdown("license");
-        },
-      });
-    }
   });
 
   httpServer.on("error", (error) => {

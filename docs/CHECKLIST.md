@@ -21,7 +21,6 @@
 - [ ] `APP_URL` exact, HTTPS, sans slash final.
 - [ ] `SEED_ADMIN_*` renseigné pour le premier seed.
 - [ ] `LEGAL_*` renseigné si les pages légales doivent être publiées.
-- [ ] `LICENSE_KEY` vide en Community ; clé dédiée en Commercial.
 - [ ] `DEMO_MODE=false` en production.
 
 ## 3. Serveur
@@ -69,7 +68,6 @@
 - [ ] `/presentation` public.
 - [ ] Boîte `contact@bl-host.site` créée et testée.
 - [ ] Pages légales complètes et publiées.
-- [ ] Clé Keygate dédiée émise.
 
 Tant que ces cases ne sont pas cochées, le site est **techniquement prêt mais pas en ligne**.
 

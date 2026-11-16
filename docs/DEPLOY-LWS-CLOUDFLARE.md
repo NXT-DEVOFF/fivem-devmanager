@@ -76,8 +76,7 @@ fichier suivi par Git. Les valeurs ci-dessous sont des **placeholders**.
 | 4 | **Cloudflare — zone `bl-host.site`** | accès au compte propriétaire de la zone ; si elle est encore chez LumenWEB, accès délégué ou support LumenWEB | Super Administrator **ou** jeton API limité (voir §2.2) | DNS, proxy, TLS, cache, WAF |
 | 5 | **Cloudflare — certificat d’origine** | création d’un Origin CA pour `bl-host.site` et `*.bl-host.site` | SSL/TLS | mode Full (strict) |
 | 6 | **LWS — messagerie** | accès à la gestion des boîtes du domaine | créer `contact@bl-host.site`, SPF/DKIM/DMARC | CTA de démo réellement opérationnel |
-| 7 | **Keygate — administration** | accès admin/API à `licences.bl-host.site` | émettre une clé produit FiveM dédiée | offre Self-hosted Commercial |
-| 8 | **Sauvegardes** | cible locale chiffrée ou bucket S3/SFTP | écriture + restauration | base, snapshots, pièces jointes, `.env` |
+| 7 | **Sauvegardes** | cible locale chiffrée ou bucket S3/SFTP | écriture + restauration | base, snapshots, pièces jointes, `.env` |
 
 > **Point à vérifier avant de demander un token Cloudflare :** d’après
 > `docs/DEPLOYMENT.md`, la zone `bl-host.site` est gérée dans le compte
@@ -130,7 +129,6 @@ dépôt.
   encaisser avant sa création ;
 - **`contact@bl-host.site` inexistant** : à créer et tester avant d’annoncer
   la démo ;
-- **clé Keygate FiveM dédiée** non émise ;
 - **SLA Managed** non testé sur l’infrastructure cible ;
 - **dépôt public/CLA** absents pour la Community AGPL.
 
@@ -161,7 +159,7 @@ Nginx LWS :443  ──►  Next.js + Socket.IO  127.0.0.1:3000
 | HTTP/HTTPS Cloudflare → Nginx | 80/443 | public |
 | Nginx → Node | 3000 | **loopback uniquement** |
 | Node → MariaDB | 3306 | **loopback uniquement** |
-| Node → Pterodactyl/Keygate | 443 | sortant |
+| Node → Pterodactyl | 443 | sortant |
 
 Ne jamais exposer `3000` ou `3306` sur Internet.
 
@@ -297,11 +295,6 @@ SEED_ADMIN_USERNAME=<LOGIN_ADMIN>
 SEED_ADMIN_PASSWORD=<MOT_DE_PASSE_INITIAL_FORT>
 SEED_ADMIN_NAME="<NOM_AFFICHE>"
 
-# Community : laisser vide. Commercial : renseigner après émission de la clé.
-KEYGATE_URL=https://licences.bl-host.site
-LICENSE_KEY=
-LICENSE_ENFORCE=false
-
 LEGAL_DRAFT=true
 LEGAL_PUBLISHER_NAME=
 LEGAL_PUBLISHER_STATUS=
@@ -345,7 +338,6 @@ cd /var/www/fivem-devmgr
 
 # Installer aussi les dépendances de build, même si NODE_ENV=production.
 npm ci --include=dev
-npm --prefix blhost-license ci --omit=dev
 
 set -a
 . /etc/fivem-devmgr.env
@@ -648,8 +640,6 @@ la procédure Cloudflare ; ce n’est pas le choix par défaut de ce runbook.
 8. **Ressources** : synchroniser et vérifier les permissions de fichiers.
 9. **Anticheat** : si utilisé, générer `ANTICHEAT_INGEST_TOKEN`, le placer dans
    la configuration de l’agent FiveM, redémarrer, vérifier le heartbeat.
-10. **Keygate** : seulement après émission de la clé dédiée ; sinon laisser
-    `LICENSE_KEY` vide et `LICENSE_ENFORCE=false` (Community).
 
 Les clés Pterodactyl/SFTP/Discord se saisissent dans l’interface et sont
 chiffrées en base ; elles ne vont pas dans `.env`.
@@ -776,7 +766,6 @@ cd /var/www/fivem-devmgr
 git fetch --all
 git checkout <TAG>
 npm ci --include=dev
-npm --prefix blhost-license ci --omit=dev
 set -a
 . /etc/fivem-devmgr.env
 set +a

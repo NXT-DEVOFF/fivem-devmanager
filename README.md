@@ -118,14 +118,13 @@ Le dépôt contient le code de l'application et ses composants principaux :
 
 - `src/` : interface Next.js, routes API, services serveur et temps réel ;
 - `prisma/` : schéma, migrations et seeds ;
-- `blhost-license/` : gate de licence Keygate (édition Commercial) ;
 - `fivem-resources/fdm-anticheat/` : agent anticheat FiveM en mode rapport ;
 - `public/` : visuels, carte GTA V et teaser vidéo utilisés par le panel ;
 - `scripts/`, `tests/` : vérifications et tests.
 
 Le fichier `.env` versionné est un **modèle public vide**. Il ne contient ni mot de passe, ni token, ni clé. Pour travailler, renseigner les valeurs dans un `.env` local non versionné.
 
-Le service séparé `website-license-pro` et les scripts d'exploitation internes (`deploy/`) ne sont pas publiés dans ce dépôt.
+Le panel ne dépend d'aucun serveur de licence externe. Le service séparé `website-license-pro` et les scripts d'exploitation internes (`deploy/`) ne sont pas publiés dans ce dépôt.
 
 ## Variables essentielles
 
@@ -137,7 +136,6 @@ Le service séparé `website-license-pro` et les scripts d'exploitation internes
 | `APP_SECRET` | Secret de session |
 | `SEED_ADMIN_*` | Compte administrateur initial |
 | `ANTICHEAT_INGEST_TOKEN` | Token Bearer de l'agent anticheat |
-| `LICENSE_KEY` | Licence Self-hosted Commercial, vide en Community |
 
 Le `.env` du dépôt est un modèle vide : ne jamais y ajouter de vraie valeur. Les clés Pterodactyl, SFTP et Discord se configurent dans l'interface et sont chiffrées en base.
 

@@ -78,14 +78,7 @@ Détections : explosions, dégâts anormaux, entités massives, spawn de véhicu
 
 En réseau local, utiliser un endpoint privé et restreindre le port au pare-feu.
 
-## 6. Keygate
-
-- **Community** : `LICENSE_KEY` vide, `LICENSE_ENFORCE=false`.
-- **Commercial** : `KEYGATE_URL`, `LICENSE_KEY` et `LICENSE_ENFORCE=true`.
-
-La clé doit être dédiée au produit FiveM DevManager. Une licence révoquée ou expirée arrête le serveur.
-
-## 7. Vérifications
+## 6. Vérifications
 
 ```bash
 curl -fsS https://<domaine>/api/health
@@ -98,10 +91,9 @@ Puis vérifier dans l'interface :
 - SFTP : lecture et recherche ;
 - Discord : message de test ;
 - IA : génération relue ;
-- anticheat : heartbeat et alerte de test ;
-- Keygate : démarrage avec licence valide.
+- anticheat : heartbeat et alerte de test.
 
-## 8. Sécurité
+## 7. Sécurité
 
 - Clés dédiées et limitées.
 - Rotation après départ ou incident.
