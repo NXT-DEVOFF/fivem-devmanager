@@ -19,7 +19,7 @@ Documentation technique publique de **FiveM DevManager**, une plateforme auto-h√
 ## Sommaire
 
 - [Architecture](docs/ARCHITECTURE.md)
-- [Installation locale](docs/INSTALL.md)
+- [Installation Pterodactyl / LumenWeb](docs/INSTALL.md)
 - [Configuration](docs/CONFIGURATION.md)
 - [D√©ploiement LWS + Cloudflare](docs/DEPLOY-LWS-CLOUDFLARE.md)
 - [Utilisation du panel](docs/USAGE.md)
