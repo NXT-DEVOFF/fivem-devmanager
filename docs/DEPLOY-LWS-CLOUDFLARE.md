@@ -176,7 +176,7 @@ npm ci
 npm run typecheck
 npm run lint
 npm test
-npm run verify:all -- --no-build
+npm run verify -- --no-build
 APP_URL="$APP_URL" npm run build
 ```
 
@@ -185,7 +185,7 @@ Critères de passage :
 - [ ] typecheck exit 0 ;
 - [ ] lint exit 0 ;
 - [ ] 135/135 tests ;
-- [ ] `verify:all` : 4/4 exécutés (PHP peut être ignoré s’il est absent) ;
+- [ ] `npm run verify -- --no-build` : exit 0 ;
 - [ ] build exit 0 ;
 - [ ] `public/media/fivem-devmgr-teaser-vertical.mp4` présent (8 Mo) ;
 - [ ] aucune valeur secrète dans `git diff` ni dans `public/`.

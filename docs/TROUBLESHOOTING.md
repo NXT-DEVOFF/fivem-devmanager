@@ -157,7 +157,7 @@ npm run build
 npx prisma migrate deploy
 npm run db:seed
 npm test
-npm run verify:all -- --no-build
+npm run verify -- --no-build
 ```
 
 Avant toute opération destructive : dump de la base, copie de `.env`, snapshots et attachments.

@@ -8,7 +8,7 @@
 - [ ] `npm run typecheck` : exit 0.
 - [ ] `npm run lint` : exit 0.
 - [ ] `npm test` : 135/135.
-- [ ] `npm run verify:all -- --no-build` : 4/4.
+- [ ] `npm run verify -- --no-build` : 3/3.
 - [ ] `APP_URL=https://<domaine> npm run build` : exit 0.
 - [ ] Aucun secret dans `public/`, `.next/`, les logs ou Git.
 - [ ] Média du teaser présent.
@@ -97,7 +97,7 @@ Tant que ces cases ne sont pas cochées, le site est **techniquement prêt mais 
 | `npm run lint` | ESLint |
 | `npm test` | Vitest |
 | `npm run test:api` | Smoke API |
-| `npm run verify:all` | Panel + gate + tests |
+| `npm run verify` | Schéma, types, tests et build |
 | `npm run secret:generate` | Secrets |
 
 ## 9. Routes
