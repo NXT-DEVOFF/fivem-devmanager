@@ -353,8 +353,9 @@ Vérifier que le seed a créé l’administrateur, puis **retirer
 `SEED_ADMIN_PASSWORD`** de l’environnement après la première connexion (ou le
 remplacer par une valeur aléatoire inutilisée).
 
-> `deploy/start.mjs` est prévu pour le conteneur Pterodactyl
-> (`/home/container`). Sur un VPS LWS, utiliser **systemd** et `server.mjs`.
+> Le script de démarrage Pterodactyl n'est pas publié dans ce dépôt. Sur un
+> VPS LWS, utiliser **systemd** et `server.mjs` ; dans Pterodactyl, l'egg
+> exécute l'installation puis `npm run start`.
 
 ### 6.4 Service systemd
 

@@ -124,7 +124,7 @@ Le dépôt contient le code de l'application et ses composants principaux :
 
 Le fichier `.env` versionné est un **modèle public vide**. Il ne contient ni mot de passe, ni token, ni clé. Pour travailler, renseigner les valeurs dans un `.env` local non versionné.
 
-Le panel ne dépend d'aucun serveur de licence externe. Les scripts d'exploitation internes (`deploy/`) ne sont pas publiés dans ce dépôt.
+Le panel ne dépend d'aucun serveur de licence externe. Les scripts d'exploitation internes ne sont pas publiés dans ce dépôt : les procédures publiques utilisent l'egg Pterodactyl ou systemd avec `server.mjs`.
 
 ## Variables essentielles
 
